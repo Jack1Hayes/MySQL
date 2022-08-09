@@ -1,0 +1,12 @@
+https://platform.stratascratch.com/coding/10159-ranking-most-active-guests?code_type=3
+
+SELECT*, DENSE_RANK() OVER(ORDER BY total DESC) AS RNK
+FROM(
+    SELECT id_guest, sum(n_messages) as total
+    FROM(
+        select id_guest, n_messages
+        from airbnb_contacts
+        order by id_guest
+        ) x
+    GROUP BY id_guest
+    ORDER BY total DESC) y;

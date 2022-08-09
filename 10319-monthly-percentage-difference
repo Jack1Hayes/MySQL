@@ -1,0 +1,10 @@
+https://platform.stratascratch.com/coding/10319-monthly-percentage-difference?code_type=3
+
+SELECT*,ROUND((month_value / lag(month_value) OVER(order BY month))*100, 2) -100 as perc
+FROM(
+    SELECT month, sum(value) as month_value
+    FROM(
+        select *, DATE_FORMAT(created_at, "%Y-%m") as month
+        from sf_transactions
+        ) x
+    GROUP BY month) y;

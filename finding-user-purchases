@@ -1,0 +1,12 @@
+https://platform.stratascratch.com/coding/10322-finding-user-purchases?code_type=3
+
+SELECT DISTINCT user_id
+FROM(
+SELECT*, DATEDIFF(created_at, next_date) AS diff
+FROM
+    (SELECT*, case when lead(rn) over (order by user_id) = 1 then NULL else lead(created_at) over (order by user_id) END as next_date
+    FROM(
+        SELECT*, row_number() over(partition by user_id ORDER BY created_at) as rn
+        FROM amazon_transactions) a) t
+WHERE next_date IS NOT NULL) b
+WHERE diff > -7

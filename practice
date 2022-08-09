@@ -1,1 +1,9 @@
+'''https://platform.stratascratch.com/coding/10353-workers-with-the-highest-salaries?code_type=3'''
 
+SELECT*
+FROM(
+SELECT*, RANK() OVER(ORDER BY salary DESC) AS rnk
+FROM worker w
+JOIN title t
+    ON worker_id = worker_ref_id) ㅌ
+WHERE ㅌ.rnk = 1

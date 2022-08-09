@@ -1,0 +1,14 @@
+https://platform.stratascratch.com/coding/10352-users-by-avg-session-time?code_type=3
+
+SELECT user_id, AVG(difference)
+FROM(
+SELECT*, TIMESTAMPDIFF(SECOND, timestamp, log) AS difference
+FROM(
+SELECT*, 
+case when action = 'page_load' and lead(action) over(order by timestamp) = 'page_load' then NULL ELSE action end as multi, case when action = 'page_load' and lead(action) over(order by timestamp) = 'page_exit' then lead(timestamp) over(order by timestamp) ELSE NULL end as log
+FROM(
+SELECT*
+FROM facebook_web_log
+WHERE action = 'page_load' OR action = 'page_exit') z)t
+WHERE multi IS NOT NULL and log IS NOT NULL) e
+GROUP by user_id

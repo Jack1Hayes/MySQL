@@ -1,0 +1,15 @@
+https://platform.stratascratch.com/coding/10285-acceptance-rate-by-date?code_type=3
+
+SELECT send_date_accept, sd/cd as ratio
+FROM(
+SELECT DISTINCT send_date_accept, count(send_date_accept) OVER (partition by send_date_accept) AS sd, cd
+    FROM(
+    SELECT *,
+    case when action = 'accepted' then lag(date) over(order by user_id_sender) else NULL end as send_date_accept  
+    FROM fb_friend_requests) x
+
+JOIN
+(SELECT DISTINCT date, count(date) over(partition by date) AS cd
+    FROM fb_friend_requests
+    WHERE action = 'sent') y
+ON x.send_date_accept = y.date) t

@@ -1,0 +1,13 @@
+https://platform.stratascratch.com/coding/10284-popularity-percentage?code_type=3
+
+SELECT*, (count(user1)/ LAST_VALUE(user1) 
+	over(order by user1
+		RANGE BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)) *100 pop
+FROM(
+    SELECT user1
+    FROM facebook_friends
+    UNION ALL
+    SELECT user2
+    FROM facebook_friends) x
+GROUP BY user1
+ORDER BY user1;

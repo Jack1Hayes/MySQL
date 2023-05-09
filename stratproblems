@@ -1,0 +1,94 @@
+Stratscratch problems
+
+https://platform.stratascratch.com/coding/10285-acceptance-rate-by-date?code_type=3
+
+SELECT send_date_accept, sd/cd as ratio
+FROM(
+SELECT DISTINCT send_date_accept, count(send_date_accept) OVER (partition by send_date_accept) AS sd, cd
+    FROM(
+    SELECT *,
+    case when action = 'accepted' then lag(date) over(order by user_id_sender) else NULL end as send_date_accept  
+    FROM fb_friend_requests) x
+
+JOIN
+(SELECT DISTINCT date, count(date) over(partition by date) AS cd
+    FROM fb_friend_requests
+    WHERE action = 'sent') y
+ON x.send_date_accept = y.date) t
+
+
+https://platform.stratascratch.com/coding/10319-monthly-percentage-difference?code_type=3
+
+SELECT*,ROUND((month_value / lag(month_value) OVER(order BY month))*100, 2) -100 as perc
+FROM(
+    SELECT month, sum(value) as month_value
+    FROM(
+        select *, DATE_FORMAT(created_at, "%Y-%m") as month
+        from sf_transactions
+        ) x
+    GROUP BY month) y;
+    
+https://platform.stratascratch.com/coding/10322-finding-user-purchases?code_type=3
+
+SELECT DISTINCT user_id
+FROM(
+SELECT*, DATEDIFF(created_at, next_date) AS diff
+FROM
+    (SELECT*, case when lead(rn) over (order by user_id) = 1 then NULL else lead(created_at) over (order by user_id) END as next_date
+    FROM(
+        SELECT*, row_number() over(partition by user_id ORDER BY created_at) as rn
+        FROM amazon_transactions) a) t
+WHERE next_date IS NOT NULL) b
+WHERE diff > -7
+
+https://platform.stratascratch.com/coding/10284-popularity-percentage?code_type=3
+
+SELECT*, (count(user1)/ LAST_VALUE(user1) 
+	over(order by user1
+		RANGE BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)) *100 pop
+FROM(
+    SELECT user1
+    FROM facebook_friends
+    UNION ALL
+    SELECT user2
+    FROM facebook_friends) x
+GROUP BY user1
+ORDER BY user1;
+
+https://platform.stratascratch.com/coding/10159-ranking-most-active-guests?code_type=3
+
+SELECT*, DENSE_RANK() OVER(ORDER BY total DESC) AS RNK
+FROM(
+    SELECT id_guest, sum(n_messages) as total
+    FROM(
+        select id_guest, n_messages
+        from airbnb_contacts
+        order by id_guest
+        ) x
+    GROUP BY id_guest
+    ORDER BY total DESC) y;
+    
+https://platform.stratascratch.com/coding/10352-users-by-avg-session-time?code_type=3
+
+SELECT user_id, AVG(difference)
+FROM(
+SELECT*, TIMESTAMPDIFF(SECOND, timestamp, log) AS difference
+FROM(
+SELECT*, 
+case when action = 'page_load' and lead(action) over(order by timestamp) = 'page_load' then NULL ELSE action end as multi, case when action = 'page_load' and lead(action) over(order by timestamp) = 'page_exit' then lead(timestamp) over(order by timestamp) ELSE NULL end as log
+FROM(
+SELECT*
+FROM facebook_web_log
+WHERE action = 'page_load' OR action = 'page_exit') z)t
+WHERE multi IS NOT NULL and log IS NOT NULL) e
+GROUP by user_id
+
+'''https://platform.stratascratch.com/coding/10353-workers-with-the-highest-salaries?code_type=3'''
+
+SELECT*
+FROM(
+SELECT*, RANK() OVER(ORDER BY salary DESC) AS rnk
+FROM worker w
+JOIN title t
+    ON worker_id = worker_ref_id) ㅌ
+WHERE ㅌ.rnk = 1
